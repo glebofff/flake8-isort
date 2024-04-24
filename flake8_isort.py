@@ -29,6 +29,7 @@ class Flake8IsortBase:
     no_skip_gitignore = False
     stdin_display_name = None
     search_current = True
+    settings_path = ''
 
     def __init__(self, tree, filename, lines):
         self.filename = filename
@@ -40,6 +41,12 @@ class Flake8IsortBase:
             '--isort-show-traceback',
             action='store_true',
             parse_from_config=True,
+            help='Show full traceback with diff from isort',
+        )
+        option_manager.add_option(
+            '--isort-settings-path',
+            parse_from_config=True,
+            default='',
             help='Show full traceback with diff from isort',
         )
         option_manager.add_option(
@@ -59,6 +66,7 @@ class Flake8IsortBase:
         cls.stdin_display_name = options.stdin_display_name
         cls.show_traceback = options.isort_show_traceback
         cls.no_skip_gitignore = options.isort_no_skip_gitignore
+        cls.settings_path = options.isort_settings_path
 
 
 class Flake8Isort5(Flake8IsortBase):
@@ -67,10 +75,10 @@ class Flake8Isort5(Flake8IsortBase):
     def run(self):
         if self.filename is not self.stdin_display_name:
             file_path = Path(self.filename)
-            settings_path = file_path.parent
+            settings_path = self.settings_path or file_path.parent
         else:
             file_path = None
-            settings_path = Path.cwd()
+            settings_path = self.settings_path or Path.cwd()
         if self.no_skip_gitignore:
             isort_config = isort.settings.Config(
                 settings_path=settings_path, skip_gitignore=False
